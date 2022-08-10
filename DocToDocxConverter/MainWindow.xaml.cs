@@ -128,7 +128,7 @@ namespace DocToDocxConverter
                         MainTextAppendError($"Failed to convert file {report.Filename}. {report.Message}");
                     }
                 };
-                MainTextAppendInfo($"Preparing to convert {droppedFilePaths.Length} files. Initializing. Starting Word, Excel, and Powerpoint...");
+                MainTextAppendInfo($"Preparing to convert {droppedFilePaths.Length} files. Initializing. Starting Word, Excel, and PowerPoint...");
                 worker.RunWorkerAsync();
             }
         }
