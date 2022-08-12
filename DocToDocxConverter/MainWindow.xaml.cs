@@ -83,15 +83,19 @@ namespace DocToDocxConverter
                                 {
                                     (worker_sender as BackgroundWorker).ReportProgress(100 * (i + 1) / droppedFilePaths.Length, new WorkerReport
                                     {
-                                        Message = $"Existing file detected. Deleting. {file}",
+                                        Message = $"Existing file detected. Deleting file {newFile}.",
                                     });
                                     RecycleBin.DeleteFile(newFile);
                                 }
 
                                 convert.ConvertFile(file);
+                                if (!File.Exists(newFile))
+                                {
+                                    throw new Exception("Assert failed. The output file does not exist while no errors were thrown. This should not happen.");
+                                }
                                 (worker_sender as BackgroundWorker).ReportProgress(100 * (i + 1) / droppedFilePaths.Length, new WorkerReport
                                 {
-                                    Message = $"Successfully converted {file}.",
+                                    Message = $"Successfully converted {file} to {newFile}.",
                                 });
                                 if (this.DeleteOriginalFileToTrash ?? false)
                                 {

@@ -94,11 +94,6 @@ namespace DocToDocxConverter
                 default:
                     throw new Exception("Unexpected file extension.");
             }
-
-            if (!File.Exists(newName))
-            {
-                throw new Exception("Assert failed. The output file does not exist while no errors were thrown. This should not happen.");
-            }
         }
 
         public void Dispose()
