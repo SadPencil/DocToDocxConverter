@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.IO;
 
 namespace DocToDocxConverter
 {
@@ -29,6 +30,7 @@ namespace DocToDocxConverter
         }
 
         public bool? DeleteOriginalFileToTrash { get; set; } = false;
+        public bool? HideOfficeAppWindow { get; set; } = false;
 
         private void MainTextAppendError(string text) => this.MainTextAppend(text, Brushes.Red, FontWeights.Bold);
         private void MainTextAppendSpecial(string text) => this.MainTextAppend(text, Brushes.Green, FontWeights.Regular);
@@ -48,10 +50,9 @@ namespace DocToDocxConverter
             this.MainTextBox.ScrollToEnd();
         }
 
-        private struct WorkerReport
+        private class WorkerReport
         {
-            public string Filename;
-            public bool Success;
+            public bool IsError = false;
             public string Message;
         }
         private void Window_Drop(object sender, DragEventArgs e)
@@ -60,6 +61,7 @@ namespace DocToDocxConverter
             if (e.Data.GetDataPresent(DataFormats.FileDrop, true))
             {
                 this.AllowDrop = false;
+                this.OptionsGroupBox.IsEnabled = false;
                 this.MainTextBox.Visibility = Visibility.Visible;
 
                 string[] droppedFilePaths = e.Data.GetData(DataFormats.FileDrop, true) as string[] ?? Array.Empty<string>();
@@ -69,22 +71,34 @@ namespace DocToDocxConverter
                 };
                 worker.DoWork += (object worker_sender, DoWorkEventArgs worker_e) =>
                 {
-                    using (var convert = new Convert())
+                    using (var convert = new Convert(this.HideOfficeAppWindow ?? false))
                     {
                         for (int i = 0; i < droppedFilePaths.Length; i++)
                         {
                             var file = droppedFilePaths[i];
                             try
                             {
+                                string newFile = convert.GetConvertedFilePath(file);
+                                if (File.Exists(newFile))
+                                {
+                                    (worker_sender as BackgroundWorker).ReportProgress(100 * (i + 1) / droppedFilePaths.Length, new WorkerReport
+                                    {
+                                        Message = $"Existing file detected. Deleting. {file}",
+                                    });
+                                    RecycleBin.DeleteFile(newFile);
+                                }
+
                                 convert.ConvertFile(file);
                                 (worker_sender as BackgroundWorker).ReportProgress(100 * (i + 1) / droppedFilePaths.Length, new WorkerReport
                                 {
-                                    Filename = file,
-                                    Message = string.Empty,
-                                    Success = true,
+                                    Message = $"Successfully converted {file}.",
                                 });
                                 if (this.DeleteOriginalFileToTrash ?? false)
                                 {
+                                    (worker_sender as BackgroundWorker).ReportProgress(100 * (i + 1) / droppedFilePaths.Length, new WorkerReport
+                                    {
+                                        Message = $"Deleting original file {file}.",
+                                    });
                                     RecycleBin.DeleteFile(file);
                                 }
                             }
@@ -92,9 +106,8 @@ namespace DocToDocxConverter
                             {
                                 (worker_sender as BackgroundWorker).ReportProgress(100 * (i + 1) / droppedFilePaths.Length, new WorkerReport
                                 {
-                                    Filename = file,
-                                    Message = ex.Message,
-                                    Success = false,
+                                    IsError = true,
+                                    Message = $"An error occured while converting file {file}. {ex.Message}",
                                 });
                             }
                         }
@@ -114,18 +127,18 @@ namespace DocToDocxConverter
                         MessageBox.Show(this, worker_e.Error.Message, "Fatal Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                     this.AllowDrop = true;
+                    this.OptionsGroupBox.IsEnabled = true;
                 };
                 worker.ProgressChanged += (object worker_sender, ProgressChangedEventArgs worker_e) =>
                 {
-                    MainTextAppendInfo($"{worker_e.ProgressPercentage}%");
                     var report = (WorkerReport)worker_e.UserState;
-                    if (report.Success)
+                    if (report.IsError)
                     {
-                        MainTextAppendInfo($"File {report.Filename} was successfully converted.");
+                        MainTextAppendError($"[{worker_e.ProgressPercentage}%] {report.Message}");
                     }
                     else
                     {
-                        MainTextAppendError($"Failed to convert file {report.Filename}. {report.Message}");
+                        MainTextAppendInfo($"[{worker_e.ProgressPercentage}%] {report.Message}");
                     }
                 };
                 MainTextAppendInfo($"Preparing to convert {droppedFilePaths.Length} files. Initializing. Starting Word, Excel, and PowerPoint...");

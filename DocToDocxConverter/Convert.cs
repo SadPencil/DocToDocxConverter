@@ -16,25 +16,25 @@ namespace DocToDocxConverter
         private Word.Application wordApp;
         private Excel.Application excelApp;
         private PowerPoint.Application pptApp;
-        public Convert()
+        public Convert(bool hideApp = false)
         {
             wordApp = new Word.Application();
-            wordApp.Visible = true;
+            if (!hideApp) wordApp.Visible = true;
 
             excelApp = new Excel.Application();
-            excelApp.Visible = true;
+            if (!hideApp) excelApp.Visible = true;
             excelApp.DisplayAlerts = false; // Save Excel file without asking to overwrite it
 
             pptApp = new PowerPoint.Application();
-            pptApp.Visible = Microsoft.Office.Core.MsoTriState.msoTrue;
+            if (!hideApp) pptApp.Visible = Microsoft.Office.Core.MsoTriState.msoTrue;
+
         }
         ~Convert()
         {
             this.Dispose();
         }
-        public void ConvertFile(string fileFullPath)
+        public string GetConvertedFilePath(string fileFullPath)
         {
-            if (!File.Exists(fileFullPath)) throw new Exception($"File {fileFullPath} does not exist.");
             fileFullPath = Path.GetFullPath(fileFullPath);
             var ext = Path.GetExtension(fileFullPath) ?? "";
             string folder = Path.GetDirectoryName(fileFullPath) ?? "";
@@ -58,9 +58,14 @@ namespace DocToDocxConverter
                 default:
                     throw new Exception("Unexpected file extension.");
             }
-
-            if (File.Exists(newName)) RecycleBin.DeleteFile(newName);
-
+            return newName;
+        }
+        public void ConvertFile(string fileFullPath)
+        {
+            if (!File.Exists(fileFullPath)) throw new Exception($"File {fileFullPath} does not exist.");
+            string ext = Path.GetExtension(fileFullPath) ?? "";
+            string newName = GetConvertedFilePath(fileFullPath);
+            if (File.Exists(newName)) throw new Exception($"Existing file detected: {newName}");
 
             switch (ext)
             {

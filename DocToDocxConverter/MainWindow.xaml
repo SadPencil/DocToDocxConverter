@@ -21,10 +21,11 @@
 
             <TextBlock  FontSize="14" TextWrapping="Wrap">Make sure Microsoft Office 365 or Microsoft Office 2013+ is installed on your computer.</TextBlock>
             <TextBlock  FontSize="14" TextWrapping="Wrap">Drag &amp; drop .DOC, .XLS, .PPT files here to convert them into .DOCX, .XLSX, .PPTX files, respectively.</TextBlock>
-            <GroupBox Header="Options" FontSize="14">
+            <GroupBox Header="Options" FontSize="14" x:Name="OptionsGroupBox">
                 <StackPanel>
                     <CheckBox FontSize="14" IsChecked="True" IsEnabled="False">Move existing .DOCX/.XLSX/.PPTX files with duplicate names to recycle bin.</CheckBox>
                     <CheckBox FontSize="14" IsChecked="{Binding Path=DeleteOriginalFileToTrash}">Move original files to recycle bin after converting.</CheckBox>
+                    <CheckBox FontSize="14" IsChecked="{Binding Path=HideOfficeAppWindow}">Don't show Office App window when converting.</CheckBox>
                 </StackPanel>
             </GroupBox>
         </StackPanel>
