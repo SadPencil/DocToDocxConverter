@@ -74,7 +74,7 @@ namespace DocToDocxConverter
                 case ".xls":
                     {
                         var xls = excelApp.Workbooks.Open(fileFullPath, ReadOnly: true);
-                        xls.SaveAs(newName, Excel.XlFileFormat.xlWorkbookDefault);
+                        xls.SaveAs(newName, Excel.XlFileFormat.xlOpenXMLWorkbook);
                         xls.Close();
                         break;
                     }
@@ -82,7 +82,7 @@ namespace DocToDocxConverter
                     {
                         // https://forum.uipath.com/t/powerpoint-com-interop/233326/5
                         var ppt = pptApp.Presentations.Open(fileFullPath, ReadOnly: Microsoft.Office.Core.MsoTriState.msoCTrue);
-                        ppt.SaveAs(newName, PowerPoint.PpSaveAsFileType.ppSaveAsDefault);
+                        ppt.SaveAs(newName, PowerPoint.PpSaveAsFileType.ppSaveAsOpenXMLPresentation);
                         ppt.Close();
                         break;
                     }
