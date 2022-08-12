@@ -83,7 +83,7 @@ namespace DocToDocxConverter
                                 {
                                     (worker_sender as BackgroundWorker).ReportProgress(100 * (i + 1) / droppedFilePaths.Length, new WorkerReport
                                     {
-                                        Message = $"Existing file detected. Deleting file {newFile}.",
+                                        Message = $"Existing file detected. Deleting file \"{newFile}\".",
                                     });
                                     RecycleBin.DeleteFile(newFile);
                                 }
@@ -95,13 +95,13 @@ namespace DocToDocxConverter
                                 }
                                 (worker_sender as BackgroundWorker).ReportProgress(100 * (i + 1) / droppedFilePaths.Length, new WorkerReport
                                 {
-                                    Message = $"Successfully converted {file} to {newFile}.",
+                                    Message = $"Successfully converted \"{file}\" to \"{newFile}\".",
                                 });
                                 if (this.DeleteOriginalFileToTrash ?? false)
                                 {
                                     (worker_sender as BackgroundWorker).ReportProgress(100 * (i + 1) / droppedFilePaths.Length, new WorkerReport
                                     {
-                                        Message = $"Deleting original file {file}.",
+                                        Message = $"Deleting original file \"{file}\".",
                                     });
                                     RecycleBin.DeleteFile(file);
                                 }
@@ -111,7 +111,7 @@ namespace DocToDocxConverter
                                 (worker_sender as BackgroundWorker).ReportProgress(100 * (i + 1) / droppedFilePaths.Length, new WorkerReport
                                 {
                                     IsError = true,
-                                    Message = $"An error occured while converting file {file}. {ex.Message}",
+                                    Message = $"An error occured while converting file \"{file}\". {ex.Message}",
                                 });
                             }
                         }
