@@ -52,7 +52,7 @@ namespace DocToDocxConverter
                     break;
 
                 case ".ppt":
-                    newName = Path.Combine(folder, name + ".xlsx");
+                    newName = Path.Combine(folder, name + ".pptx");
                     break;
 
                 default:
