@@ -40,13 +40,32 @@ namespace DocToDocxConverter
             string folder = Path.GetDirectoryName(fileFullPath) ?? "";
             string name = Path.GetFileNameWithoutExtension(fileFullPath) ?? "";
             if (string.IsNullOrEmpty(folder) || string.IsNullOrEmpty(name)) throw new Exception("Assert failed.");
+            string newName;
+            switch (ext)
+            {
+                case ".doc":
+                    newName = Path.Combine(folder, name + ".docx");
+                    break;
+
+                case ".xls":
+                    newName = Path.Combine(folder, name + ".xlsx");
+                    break;
+
+                case ".ppt":
+                    newName = Path.Combine(folder, name + ".xlsx");
+                    break;
+
+                default:
+                    throw new Exception("Unexpected file extension.");
+            }
+
+            if (File.Exists(newName)) RecycleBin.DeleteFile(newName);
+
 
             switch (ext)
             {
                 case ".doc":
                     {
-                        string newName = Path.Combine(folder, name + ".docx");
-                        if (File.Exists(newName)) RecycleBin.DeleteFile(newName);
                         var doc = wordApp.Documents.Open(fileFullPath, ReadOnly: true);
                         doc.SaveAs2(newName, Word.WdSaveFormat.wdFormatXMLDocument, CompatibilityMode: Word.WdCompatibilityMode.wdCurrent);
                         doc.Close();
@@ -54,8 +73,6 @@ namespace DocToDocxConverter
                     }
                 case ".xls":
                     {
-                        string newName = Path.Combine(folder, name + ".xlsx");
-                        if (File.Exists(newName)) RecycleBin.DeleteFile(newName);
                         var xls = excelApp.Workbooks.Open(fileFullPath, ReadOnly: true);
                         xls.SaveAs(newName, Excel.XlFileFormat.xlWorkbookDefault);
                         xls.Close();
@@ -63,8 +80,6 @@ namespace DocToDocxConverter
                     }
                 case ".ppt":
                     {
-                        string newName = Path.Combine(folder, name + ".pptx");
-                        if (File.Exists(newName)) RecycleBin.DeleteFile(newName);
                         // https://forum.uipath.com/t/powerpoint-com-interop/233326/5
                         var ppt = pptApp.Presentations.Open(fileFullPath, ReadOnly: Microsoft.Office.Core.MsoTriState.msoCTrue);
                         ppt.SaveAs(newName, PowerPoint.PpSaveAsFileType.ppSaveAsDefault);
@@ -73,6 +88,11 @@ namespace DocToDocxConverter
                     }
                 default:
                     throw new Exception("Unexpected file extension.");
+            }
+
+            if (!File.Exists(newName))
+            {
+                throw new Exception("Assert failed. The output file does not exist while no errors were thrown. This should not happen.");
             }
         }
 
